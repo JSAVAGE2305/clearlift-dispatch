@@ -215,6 +215,22 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--steel);outline-o
 </style>
 </head>
 <body>
+<!-- Hidden static forms so Netlify detects them at deploy time and offers them
+     under Project configuration > Notifications > Form submission notifications.
+     Not shown to the user — submissions are sent via JS fetch further down. -->
+<form name="transport-request" data-netlify="true" hidden>
+  <input type="hidden" name="form-name" value="transport-request" />
+  <input type="text" name="customer" />
+  <input type="text" name="date_needed" />
+  <textarea name="details"></textarea>
+</form>
+<form name="workshop-request" data-netlify="true" hidden>
+  <input type="hidden" name="form-name" value="workshop-request" />
+  <input type="text" name="customer" />
+  <input type="text" name="date_needed" />
+  <textarea name="details"></textarea>
+</form>
+
 <div class="wrap">
 
   <div class="hdr">
@@ -398,14 +414,14 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--steel);outline-o
         </div>
         <div class="doc" id="docPreview"></div>
         <div class="actions">
-          <button class="btn btn-yellow" id="sendTransport">Open email to Transport</button>
-          <button class="btn btn-orange" id="sendWorkshop" style="display:none;">Open email to Workshop</button>
+          <button class="btn btn-yellow" id="sendTransport">Send to Transport</button>
+          <button class="btn btn-orange" id="sendWorkshop" style="display:none;">Send to Workshop</button>
         </div>
         <div class="actions">
           <button class="btn btn-ghost btn-sm" id="copyBtn">Copy text</button>
           <button class="btn btn-ghost btn-sm" id="clearBtn">Clear form</button>
         </div>
-        <div class="footnote">Opens your email app with the message pre-filled &mdash; check it, then hit send from there.</div>
+        <div class="footnote" id="sendFootnote">Sends straight to transport@clearlift.ie &mdash; no email app needed.</div>
       </div>
     </div>
   </div>
@@ -771,18 +787,45 @@ function subjectFor(){
   const cName = $('c_name').value || 'Customer TBC';
   return `Transport Request - ${cName} - ${fmtDate($('f_date').value)}`;
 }
-function openMail(to, subject, body){
-  const url = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(url, '_blank');
+function encodeFormData(data){
+  return Object.keys(data).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(data[k])).join('&');
 }
-$('sendTransport').addEventListener('click', ()=>{
-  openMail('transport@clearlift.ie', subjectFor(), buildDoc('transport'));
-  saveEquipmentToRecent();
-  showToast('Email to Transport opened');
+async function submitNetlifyForm(formName, fields, btn, destinationLabel){
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Sending...';
+  try{
+    const resp = await fetch('/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: encodeFormData({ 'form-name': formName, ...fields })
+    });
+    if(!resp.ok) throw new Error('Send failed (' + resp.status + ')');
+    showToast('Sent to ' + destinationLabel);
+    return true;
+  } catch(err){
+    showToast('Could not send: ' + (err && err.message ? err.message : err));
+    console.error('Send failed:', err);
+    return false;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+$('sendTransport').addEventListener('click', async ()=>{
+  const ok = await submitNetlifyForm('transport-request', {
+    customer: $('c_name').value || 'Customer TBC',
+    date_needed: fmtDate($('f_date').value),
+    details: buildDoc('transport')
+  }, $('sendTransport'), 'Transport');
+  if(ok) saveEquipmentToRecent();
 });
 $('sendWorkshop').addEventListener('click', ()=>{
-  openMail('workshop@clearlift.ie', 'PDI Request - '+ ($('c_name').value||'Customer TBC') +' - '+fmtDate($('f_date').value), buildDoc('workshop'));
-  showToast('Email to Workshop opened');
+  submitNetlifyForm('workshop-request', {
+    customer: $('c_name').value || 'Customer TBC',
+    date_needed: fmtDate($('f_date').value),
+    details: buildDoc('workshop')
+  }, $('sendWorkshop'), 'Workshop');
 });
 function saveEquipmentToRecent(){
   equipment.filter(r=>r.equipNo).forEach(saveRecentEquipment);
