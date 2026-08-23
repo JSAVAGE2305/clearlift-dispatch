@@ -88,27 +88,44 @@ exports.handler = async function (event) {
       companies.map(async (co) => {
         const p = co.properties || {};
         const address = [p.address, p.city, p.zip].filter(Boolean).join(", ");
-        let contactName = "", contactPhone = "", contactEmail = "";
+        let contacts = [];
 
         try {
           const assoc = await hubspotFetch(
             "/crm/v4/objects/companies/" + co.id + "/associations/contacts",
             token
           );
-          const contactId = assoc.results && assoc.results[0] && assoc.results[0].toObjectId;
-          if (contactId) {
-            const contact = await hubspotFetch(
-              "/crm/v3/objects/contacts/" + contactId + "?properties=firstname,lastname,phone,email",
-              token
+          const ids = (assoc.results || [])
+            .map((r) => r.toObjectId)
+            .filter(Boolean)
+            .slice(0, 10);
+
+          if (ids.length) {
+            const batch = await hubspotFetch(
+              "/crm/v3/objects/contacts/batch/read",
+              token,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  properties: ["firstname", "lastname", "phone", "email"],
+                  inputs: ids.map((id) => ({ id })),
+                }),
+              }
             );
-            const cp = contact.properties || {};
-            contactName = [cp.firstname, cp.lastname].filter(Boolean).join(" ");
-            contactPhone = cp.phone || "";
-            contactEmail = cp.email || "";
+            contacts = (batch.results || []).map((c) => {
+              const cp = c.properties || {};
+              return {
+                name: [cp.firstname, cp.lastname].filter(Boolean).join(" ") || "(no name)",
+                phone: cp.phone || "",
+                email: cp.email || "",
+              };
+            });
           }
         } catch {
-          // no contact found — leave contact fields blank
+          // no contacts found — leave list empty, front end falls back to manual entry
         }
+
+        const first = contacts[0] || { name: "", phone: "", email: "" };
 
         return {
           companyName: p.name || "",
@@ -116,9 +133,10 @@ exports.handler = async function (event) {
           address,
           phone: p.phone || "",
           email: "",
-          contactName,
-          contactPhone,
-          contactEmail,
+          contactName: first.name,
+          contactPhone: first.phone,
+          contactEmail: first.email,
+          contacts,
         };
       })
     );
