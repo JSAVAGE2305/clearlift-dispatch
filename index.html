@@ -268,6 +268,9 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--steel);outline-o
           <div><label>Customer code</label><input type="text" id="c_code"></div>
         </div>
         <div class="row single"><label>Address</label><input type="text" id="c_addr"></div>
+        <div class="row single" id="hsContactRow" style="display:none;">
+          <div><label>Contact (from HubSpot)</label><select id="hsContactSelect"></select></div>
+        </div>
         <div class="row third">
           <div><label>Contact name</label><input type="text" id="c_cname"></div>
           <div><label>Contact number</label><input type="text" id="c_cphone"></div>
@@ -588,6 +591,32 @@ loadRecentEquipment().then(renderRecentEqChips);
 $('hsSearchBtn').addEventListener('click', searchHubSpot);
 $('hsQuery').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); searchHubSpot(); }});
 
+let currentContacts = [];
+function applyContactList(contacts){
+  currentContacts = contacts || [];
+  const row = $('hsContactRow'), select = $('hsContactSelect');
+  if(currentContacts.length > 1){
+    select.innerHTML = currentContacts.map((c,i)=>`<option value="${i}">${escapeHtml(c.name)}</option>`).join('');
+    row.style.display = 'block';
+    fillContactFields(currentContacts[0]);
+  } else if(currentContacts.length === 1){
+    row.style.display = 'none';
+    fillContactFields(currentContacts[0]);
+  } else {
+    row.style.display = 'none';
+    fillContactFields({name:'', phone:'', email:''});
+  }
+}
+function fillContactFields(c){
+  $('c_cname').value = c.name || '';
+  $('c_cphone').value = c.phone || '';
+  $('c_cemail').value = c.email || '';
+}
+$('hsContactSelect').addEventListener('change', e=>{
+  const c = currentContacts[+e.target.value];
+  if(c){ fillContactFields(c); renderPreview(); }
+});
+
 async function searchHubSpot(){
   const q = $('hsQuery').value.trim();
   if(!q) return;
@@ -622,9 +651,7 @@ async function searchHubSpot(){
           $('c_name').value = r.companyName || '';
           $('c_code').value = r.customerCode || '';
           $('c_addr').value = r.address || '';
-          $('c_cname').value = r.contactName || '';
-          $('c_cphone').value = r.contactPhone || r.phone || '';
-          $('c_cemail').value = r.contactEmail || r.email || '';
+          applyContactList(r.contacts && r.contacts.length ? r.contacts : (r.contactName ? [{name:r.contactName, phone:r.contactPhone||r.phone||'', email:r.contactEmail||r.email||''}] : []));
           resultsEl.style.display='none';
           renderPreview();
           showToast('Customer details filled in from HubSpot');
