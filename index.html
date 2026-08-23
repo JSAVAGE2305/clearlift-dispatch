@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Clearlift Dispatch</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root{
+  --paper:#F6F8F7;
+  --ticket:#FFFFFF;
+  --ink:#152420;
+  --ink-soft:#5D6E67;
+  --line:#E1E7E4;
+  --steel:#2F6254;
+  --steel-deep:#1F4E42;
+  --yellow:#ED1C24;
+  --yellow-deep:#C4151C;
+  --orange:#E38B29;
+  --orange-soft:#FCEEDC;
+  --green:#2F6254;
+  --radius:16px;
+  --radius-sm:10px;
+  --radius-pill:999px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 16px 80px;}
+
+/* ---------- Header ---------- */
+.hdr{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  background:#FFFFFF;border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:22px;flex-wrap:wrap;
+  position:relative;overflow:hidden;
+}
+.hdr::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--yellow) 0 50%,var(--steel-deep) 50% 100%);
+}
+.hdr-left{display:flex;align-items:center;gap:13px;}
+.hdr-mark{
+  width:42px;height:42px;background:var(--yellow);color:#fff;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;flex:none;
+  letter-spacing:-0.5px;
+}
+.hdr-eyebrow{font-size:11px;font-weight:700;letter-spacing:1.6px;color:var(--yellow);text-transform:uppercase;}
+.hdr-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.2px;line-height:1.15;color:var(--steel-deep);}
+.hdr-sub{font-size:12.5px;color:var(--ink-soft);margin-top:2px;letter-spacing:0.1px;}
+.hdr-stamp{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.5px;letter-spacing:0.6px;
+  color:#fff;background:var(--steel-deep);
+  border-radius:var(--radius-pill);
+  padding:8px 16px;white-space:nowrap;
+  cursor:pointer;border:none;transition:background .12s ease;
+}
+.hdr-stamp:hover,.hdr-stamp:focus{background:var(--steel);outline:none;}
+
+/* ---------- Layout ---------- */
+.grid{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start;}
+@media(max-width:920px){.grid{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--ticket);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px 20px 22px;
+  margin-bottom:16px;
+  box-shadow:0 1px 2px rgba(21,36,32,0.04);
+}
+.section-label{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;
+  font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase;
+  color:var(--steel-deep);
+  display:flex;align-items:center;gap:9px;margin-bottom:14px;
+}
+.section-label .n{
+  background:var(--steel-deep);color:#fff;
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;flex:none;
+}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.row.single{grid-template-columns:1fr;}
+.row.third{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:520px){.row,.row.third{grid-template-columns:1fr;}}
+
+label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:4px;font-weight:600;letter-spacing:0.2px;}
+input[type=text],input[type=date],input[type=number],textarea,select{
+  width:100%;height:40px;box-sizing:border-box;
+  border:1.5px solid var(--line);border-radius:var(--radius-sm);
+  padding:0 11px;font-family:'Inter',sans-serif;font-size:14.5px;color:var(--ink);
+  background:#FBFCFB;
+  -webkit-appearance:none;appearance:none;
+}
+select{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%235D6E67' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+textarea{height:auto;padding:9px 11px;resize:vertical;min-height:56px;}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--steel);outline-offset:0;border-color:var(--steel);}
+
+.pillrow{display:flex;gap:8px;flex-wrap:wrap;}
+.pill{
+  border:1.5px solid var(--line);background:#FBFCFB;color:var(--ink-soft);
+  padding:8px 14px;border-radius:var(--radius-pill);font-size:13.5px;font-weight:600;cursor:pointer;
+  transition:all .12s ease;
+}
+.pill:hover{border-color:var(--steel);}
+.pill.active{background:var(--steel-deep);border-color:var(--steel-deep);color:#fff;}
+.pill.active.yellow{background:var(--yellow);border-color:var(--yellow-deep);color:#fff;}
+
+.checkline{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-soft);margin-bottom:12px;cursor:pointer;user-select:none;}
+.checkline input{width:16px;height:16px;accent-color:var(--steel-deep);}
+
+.hs-search{display:flex;gap:8px;margin-bottom:12px;}
+.hs-search input{flex:1;min-width:0;}
+@media(max-width:480px){
+  .hs-search{flex-direction:column;}
+  .hs-search .btn{width:100%;}
+}
+.btn{
+  border:none;border-radius:var(--radius-pill);padding:10px 18px;font-weight:700;font-size:13.5px;
+  cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:0.1px;white-space:nowrap;
+  transition:transform .08s ease, opacity .12s ease, box-shadow .12s ease;
+}
+.btn:active{transform:translateY(1px);}
+.btn:disabled{opacity:.5;cursor:default;}
+.btn-steel{background:var(--steel-deep);color:#fff;}
+.btn-steel:hover{box-shadow:0 4px 12px rgba(31,78,66,0.25);}
+.btn-yellow{background:var(--yellow);color:#fff;}
+.btn-yellow:hover{box-shadow:0 4px 14px rgba(237,28,36,0.28);}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-sm{padding:7px 13px;font-size:12px;}
+
+.hs-results{border:1.5px solid var(--line);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden;}
+.hs-item{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13.5px;}
+.hs-item:last-child{border-bottom:none;}
+.hs-item:hover{background:var(--paper);}
+.hs-item b{display:block;font-size:14px;color:var(--steel-deep);}
+.hs-item span{color:var(--ink-soft);font-size:12px;}
+.hs-status{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
+
+.eq-block{
+  border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px;background:var(--paper);
+}
+.eq-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.eq-block-label{font-size:11.5px;font-weight:700;letter-spacing:0.6px;color:var(--ink-soft);text-transform:uppercase;}
+.eq-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;
+}
+@media(max-width:640px){.eq-row{grid-template-columns:1fr;}}
+.eq-remove{
+  background:transparent;border:1.5px solid var(--line);color:var(--ink-soft);
+  border-radius:var(--radius-pill);padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600;
+  display:flex;align-items:center;gap:5px;
+}
+.eq-remove:hover{border-color:var(--yellow);color:var(--yellow-deep);}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 14px;}
+.chip{
+  background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-pill);
+  padding:4px 11px;font-size:11.5px;color:var(--ink-soft);cursor:pointer;
+}
+.chip:hover{border-color:var(--steel);color:var(--steel-deep);}
+
+.pdi-box{
+  border:1.5px dashed var(--line);border-radius:var(--radius-sm);padding:14px;
+  display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:all .12s ease;
+}
+.pdi-box.on{border-color:var(--orange);border-style:solid;background:var(--orange-soft);}
+.pdi-box input{width:20px;height:20px;accent-color:var(--orange);flex:none;margin-top:2px;}
+.pdi-title{font-weight:700;font-size:14.5px;}
+.pdi-desc{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+
+/* ---------- Preview panel ---------- */
+.preview-wrap{position:sticky;top:16px;}
+.tab-row{display:flex;gap:6px;margin-bottom:12px;}
+.tab{
+  flex:1;text-align:center;padding:8px 6px;font-size:12px;font-weight:700;letter-spacing:0.4px;
+  border:1.5px solid var(--line);border-radius:var(--radius-pill);cursor:pointer;color:var(--ink-soft);
+  text-transform:uppercase;background:#FBFCFB;
+}
+.tab.active{background:var(--steel-deep);color:#fff;border-color:var(--steel-deep);}
+.tab.active.pdi{background:var(--orange);border-color:var(--orange);}
+.doc{
+  font-family:'JetBrains Mono',monospace;font-size:12.3px;line-height:1.65;
+  white-space:pre-wrap;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:14px;max-height:520px;overflow:auto;color:var(--ink);
+}
+.actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:var(--steel-deep);color:#fff;padding:10px 18px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;
+  opacity:0;pointer-events:none;transition:opacity .2s ease, transform .2s ease;z-index:50;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+.spin{
+  display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.35);
+  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;margin-right:6px;vertical-align:-2px;
+}
+@keyframes sp{to{transform:rotate(360deg);}}
+.err{color:var(--yellow-deep);font-size:12.5px;margin-top:4px;}
+.footnote{font-size:11.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-mark">CL</div>
+      <div>
+        <div class="hdr-eyebrow">Clearlift &middot; Smarter Dispatch</div>
+        <div class="hdr-title">Transport Request</div>
+      </div>
+    </div>
+    <div class="hdr-stamp" id="dateStamp" role="button" tabindex="0" title="Tap to change date">03 JUN 2026</div>
+  </div>
+
+  <div class="grid">
+    <!-- ================= FORM ================= -->
+    <div>
+
+      <div class="card">
+        <div class="section-label"><span class="n">1</span>Job basics</div>
+        <div class="row">
+          <div>
+            <label>Date needed</label>
+            <input type="date" id="f_date">
+          </div>
+          <div>
+            <label>Entity</label>
+            <div class="pillrow" id="entityPills">
+              <div class="pill" data-v="CLF">CLF</div>
+              <div class="pill" data-v="ILT">ILT</div>
+            </div>
+          </div>
+        </div>
+        <label>Requested by</label>
+        <div class="pillrow" id="requestorPills">
+          <div class="pill" data-v="Jonathan">Jonathan</div>
+          <div class="pill" data-v="Wayne">Wayne</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label"><span class="n">2</span>Customer details</div>
+        <div class="hs-search">
+          <input type="text" id="hsQuery" placeholder="Search HubSpot for a company...">
+          <button class="btn btn-steel" id="hsSearchBtn">Search HubSpot</button>
+        </div>
+        <div id="hsStatus" class="hs-status" style="display:none;"></div>
+        <div id="hsResults" class="hs-results" style="display:none;"></div>
+
+        <div class="row">
+          <div><label>Customer name</label><input type="text" id="c_name"></div>
+          <div><label>Customer code</label><input type="text" id="c_code"></div>
+        </div>
+        <div class="row single"><label>Address</label><input type="text" id="c_addr"></div>
+        <div class="row third">
+          <div><label>Contact name</label><input type="text" id="c_cname"></div>
+          <div><label>Contact number</label><input type="text" id="c_cphone"></div>
+          <div><label>Contact email</label><input type="text" id="c_cemail"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label"><span class="n">3</span>Delivery details</div>
+        <label class="checkline"><input type="checkbox" id="sameAsCustomer" checked> Same as customer above</label>
+        <div id="deliveryFields" style="display:none;">
+          <div class="row single"><label>Delivery site name</label><input type="text" id="d_name"></div>
+          <div class="row single"><label>Delivery address</label><input type="text" id="d_addr"></div>
+          <div class="row third">
+            <div><label>Contact name</label><input type="text" id="d_cname"></div>
+            <div><label>Contact number</label><input type="text" id="d_cphone"></div>
+            <div><label>Contact email</label><input type="text" id="d_cemail"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label"><span class="n">4</span>Equipment</div>
+        <div id="eqRows"></div>
+        <button class="btn btn-ghost btn-sm" id="addEqRow">+ Add another unit</button>
+        <div id="recentEqChips" class="chips"></div>
+
+        <div class="row" style="margin-top:6px;">
+          <div>
+            <label>Sale / Rental</label>
+            <select id="f_saletype">
+              <option value="">&mdash;</option>
+              <option>Rental</option>
+              <option>Sale</option>
+            </select>
+          </div>
+          <div><label>Quantity</label><input type="number" id="f_qty" min="1" value="1"></div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Mast type</label>
+            <select id="f_mastType">
+              <option value="">&mdash;</option>
+              <option>Duplex Mast</option>
+              <option>Triplex Mast</option>
+            </select>
+          </div>
+          <div>
+            <label>Lift height</label>
+            <select id="f_liftHeight">
+              <option value="">&mdash;</option>
+              <option>3.0M</option>
+              <option>3.3M</option>
+              <option>3.5M</option>
+              <option>3.6M</option>
+              <option>4.0M</option>
+              <option>4.3M</option>
+              <option>4.5M</option>
+              <option>4.7M</option>
+              <option>4.8M</option>
+              <option>5.0M</option>
+              <option>5.3M</option>
+              <option>5.5M</option>
+              <option>6.0M</option>
+              <option>6.5M</option>
+              <option>7.0M</option>
+              <option>7.5M</option>
+              <option>8.0M</option>
+              <option>8.5M</option>
+              <option>9.0M</option>
+              <option>9.5M</option>
+              <option>10.0M</option>
+              <option>10.5M</option>
+              <option>11.0M</option>
+              <option>11.5M</option>
+              <option>12.0M</option>
+              <option>12.5M</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Option 1</label>
+            <select id="f_opt1" class="opt-select"></select>
+          </div>
+          <div>
+            <label>Option 2</label>
+            <select id="f_opt2" class="opt-select"></select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Option 3</label>
+            <select id="f_opt3" class="opt-select"></select>
+          </div>
+          <div>
+            <label>Option 4</label>
+            <select id="f_opt4" class="opt-select"></select>
+          </div>
+        </div>
+        <div class="row single"><label>Delivery quoted to customer</label><input type="date" id="f_quoted"></div>
+        <div class="row single"><label>Additional info for driver</label><textarea id="f_info" placeholder="Access notes, site contact on arrival, swap details..."></textarea></div>
+      </div>
+
+      <div class="card">
+        <div class="section-label"><span class="n">5</span>PDI / Prepared for hire</div>
+        <label class="pdi-box" id="pdiBox">
+          <input type="checkbox" id="f_pdi">
+          <div>
+            <div class="pdi-title">This unit needs a PDI before it goes</div>
+            <div class="pdi-desc">Adds a matching request to the workshop, sent to workshop@clearlift.ie alongside the transport request.</div>
+          </div>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- ================= PREVIEW ================= -->
+    <div class="preview-wrap">
+      <div class="card">
+        <div class="section-label"><span class="n">&#9998;</span>Ready to send</div>
+        <div class="tab-row" id="tabRow">
+          <div class="tab active" data-tab="transport">Transport copy</div>
+          <div class="tab pdi" data-tab="workshop" id="workshopTab" style="display:none;">Workshop copy</div>
+        </div>
+        <div class="doc" id="docPreview"></div>
+        <div class="actions">
+          <button class="btn btn-yellow" id="sendTransport">Open email to Transport</button>
+          <button class="btn btn-orange" id="sendWorkshop" style="display:none;">Open email to Workshop</button>
+        </div>
+        <div class="actions">
+          <button class="btn btn-ghost btn-sm" id="copyBtn">Copy text</button>
+          <button class="btn btn-ghost btn-sm" id="clearBtn">Clear form</button>
+        </div>
+        <div class="footnote">Opens your email app with the message pre-filled &mdash; check it, then hit send from there.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- state ---------------- */
+let equipment = [{equipNo:'',serialNo:'',model:''}];
+let activeTab = 'transport';
+let hsResultsCache = [];
+
+const $ = id => document.getElementById(id);
+
+/* ---------------- init defaults ---------------- */
+(function initDate(){
+  const d = new Date();
+  $('f_date').value = d.toISOString().slice(0,10);
+  updateStamp();
+})();
+function updateStamp(){
+  const v = $('f_date').value;
+  if(!v){ $('dateStamp').textContent = '— NO DATE —'; return; }
+  const d = new Date(v+'T00:00:00');
+  $('dateStamp').textContent = d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+}
+$('f_date').addEventListener('change', ()=>{updateStamp();renderPreview();});
+$('dateStamp').addEventListener('click', ()=>{
+  const d = $('f_date');
+  d.scrollIntoView({behavior:'smooth', block:'center'});
+  d.focus();
+  if(typeof d.showPicker === 'function'){
+    try{ d.showPicker(); }catch(e){}
+  }
+});
+$('dateStamp').addEventListener('keydown', e=>{
+  if(e.key==='Enter' || e.key===' '){ e.preventDefault(); $('dateStamp').click(); }
+});
+
+/* ---------------- pills ---------------- */
+function wirePills(containerId, storageKey, defaultVal){
+  const el = $(containerId);
+  el.querySelectorAll('.pill').forEach(p=>{
+    p.addEventListener('click', ()=>{
+      el.querySelectorAll('.pill').forEach(x=>x.classList.remove('active','yellow'));
+      p.classList.add('active');
+      if(containerId==='requestorPills') p.classList.add('yellow');
+      el.dataset.value = p.dataset.v;
+      renderPreview();
+      if(storageKey) saveLocal(storageKey, p.dataset.v);
+    });
+  });
+}
+wirePills('entityPills','last-entity');
+wirePills('requestorPills','last-requestor');
+
+function saveLocal(key,val){
+  try{ window.storage && window.storage.set(key, val, false); }catch(e){}
+}
+async function loadLocal(key){
+  try{
+    const r = await window.storage.get(key, false);
+    return r ? r.value : null;
+  }catch(e){ return null; }
+}
+
+/* restore last requestor / entity */
+(async function restorePrefs(){
+  const req = await loadLocal('last-requestor');
+  const ent = await loadLocal('last-entity');
+  if(req){ const p=$('requestorPills').querySelector('[data-v="'+req+'"]'); if(p) p.click(); }
+  if(ent){ const p=$('entityPills').querySelector('[data-v="'+ent+'"]'); if(p) p.click(); }
+})();
+
+/* ---------------- delivery toggle ---------------- */
+$('sameAsCustomer').addEventListener('change', e=>{
+  $('deliveryFields').style.display = e.target.checked ? 'none' : 'block';
+  renderPreview();
+});
+
+/* ---------------- equipment rows ---------------- */
+const OPTIONS_LIST = ["Cascade external side shifter","External side shifter (1300mm carriage)","Integrated side shifter","POS+SS(out2130)(in1900)(out2400)","Leap scale system","Solid tyre","Dual front pnuemastic tyre","Dual front solid tyre","No mark tyre","Dual front no mark tyre","Rear working light","Blue spot light","Perimeter warning lights","Rear buzzer","Extra green beacon","Rear grab horn + 2 sides mirror","3rd valve","3rd/4th valves","3rd pipelines(duplex mast)","3rd/4th pipelines(duplex mast)","3rd pipelines(triplex mast)","3rd/4th pipelines(triplex mast)","5th valves&pipelines&1*pipe reel","Customized color","Low overhead guard","Full cabin","New Heater","Old Heater","Electric filament(rear window)","Roof wash wiper","Interior roof visor","Rasied 350mm seat height","Air Conditioning","Doorless cabin","Top screen","Roll down sides","Screen guard","Toyota copy suspension seat","KL11 suspension seat with armrest","KL01 armrest & headrest","KL01 heated seat","MSG65 premiem seat","Wireless camera","Fork length standard","No forks","Each 100mm extended fork length","Foldable forks","Fork carriage standard","Each 100mm extended carriage width","Joysticks","Fingertips","Fob key & pin code access","Fingerprint access","Update to 5Y telematic system","Cold storage","CQD20L ZF&Schabmuller traction","Modify drive-in chassis","Radar speed limit (2-pin connector)","Mast free lift cut out","Reverse radar","Reverse video","Charger bracket","Radio & Speaker","VISTA mast","GK25 Gearbox of TVL/FVL","Lengthen front fender","Under belly tray","Big dashboard for X2","5-10m charger cable","Interlock cab door","360 Degrees panorama system","Perspex roof for X2","EFL PRO Clamp interlock","CHN Scale (printer)","RAVAS Scale (no printer)","RAVAS Scale (printer)","Externalside shift","Fob key & pin code switch","Rubber pattern driving wheel","Reel carrier (EPT20-20WA)","Full cabin for QDD","Doorless cabin for QDD","Stand-on platform","Castor wheel(EPT20-15ET2H)","Backrest(48in)","Backrest(60in)","Proportional lift&lower","Fork carriage tilt for RSC082","Special fork carriage width","Heating battery 24V/205AH","Drive wheel 230x90 for KPL201","Straddle inner width 1250"];
+function optionOptions(selected){
+  return '<option value="">—</option>' + OPTIONS_LIST.map(o=>
+    `<option value="${escapeAttr(o)}"${o===selected?' selected':''}>${escapeHtml(o)}</option>`
+  ).join('');
+}
+['f_opt1','f_opt2','f_opt3','f_opt4'].forEach(id=>{ $(id).innerHTML = optionOptions(''); });
+
+const MODEL_LIST = ["EFS101","TCL101","TCL122","TCL152","EFS151","EFL203","EFL203P","CPD15TVL","CPD18TVL","CPD20TVL","EFXZ251","EFXZ301","TDL162","TDL201","CPD18FVL","CPD20FVL","EFLA251S","EFL201","EFL183","EFL252X2","EFL302X2","EFL302","EFL352X5","EFL382X5","EFL25PRO","EFL30PRO","EFL35PRO","EFL253","EFL303","EFL353","EFL253S","EFL303S","EFL353S","EFL253P","EFL303P","EFL353P","CPD45L1","CPD50L1","EFL702","EFL803-6","EFL803-9","EFL1002","EFL1003-6","CPD15L1","CPD20L1","CPD30L1S","CPD35L1S","CQD16L3","CQD16L3-H","CQD20LB","EFL403-HV","EFL453-HV","EFL503-HV","EFL503-HV-6","EFL553-HV-6","EFL503-HVD","EFL553-HVD","EFL603-HV","EFL703-HV","EFL753-HV","EFL803-HV-6","EFL803-HV-9","EFL1003-HV-6","EFL1203-HV-6","EFL1603-HV-9","EFL1603-HV-12","EFL1803-HV-9","EFL1803-HV-12","EFL2503-HV-12","EPT20-15ET","EPT20-15ET2","F2","F3","F4","F4201","EPL1531","EPL154","EPL185","TPL251","DS3","CQE12R","CQE15R","CQE15S","RPL201","RPL201H","RPL20 PRO","WAL20 PRO","EPT25-WA","RPL251","RPL301","ES12-25WA","ES14-30WA","ES18-40WA","ES20-WA","KPL201","KPL201H","KPL251","KSI201","WPL202","ES16-RS","ESL161","WSA121","WSA161","WSi161","EPT20-15ET2H","EPT20-20WA","RSC082","RSC122","RSC152","RSC202","QDD301T","QDD601T","ES15-15ES","ES15-33DM","ES12-12MM","ES12-25MM","ES12-12ES","ES12-25DM","ESA121-M","ESA121","ESA121-D","QDD10L","QDD15L","ESi161","ESL122","ESD122","JX0-3.0m","JX1-4.8m"];
+function modelOptions(selected){
+  return '<option value="">—</option>' + MODEL_LIST.map(m=>
+    `<option value="${escapeAttr(m)}"${m===selected?' selected':''}>${escapeHtml(m)}</option>`
+  ).join('');
+}
+
+function renderEqRows(){
+  const wrap = $('eqRows');
+  wrap.innerHTML = '';
+  equipment.forEach((row,i)=>{
+    const block = document.createElement('div');
+    block.className = 'eq-block';
+    block.innerHTML = `
+      <div class="eq-block-head">
+        <span class="eq-block-label">Unit ${i+1}</span>
+        <button class="eq-remove" data-i="${i}" title="Remove unit">Remove &times;</button>
+      </div>
+      <div class="eq-row">
+        <div><label>Equip no.</label><input type="text" data-i="${i}" data-f="equipNo" value="${escapeAttr(row.equipNo)}" placeholder="e.g. 5353"></div>
+        <div><label>Serial no.</label><input type="text" data-i="${i}" data-f="serialNo" value="${escapeAttr(row.serialNo)}"></div>
+        <div><label>Model</label><select data-i="${i}" data-f="model">${modelOptions(row.model)}</select></div>
+      </div>
+    `;
+    wrap.appendChild(block);
+  });
+  wrap.querySelectorAll('input, select').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const i = +e.target.dataset.i, f = e.target.dataset.f;
+      equipment[i][f] = e.target.value;
+      renderPreview();
+    });
+    inp.addEventListener('change', e=>{
+      const i = +e.target.dataset.i, f = e.target.dataset.f;
+      equipment[i][f] = e.target.value;
+      renderPreview();
+    });
+  });
+  wrap.querySelectorAll('.eq-remove').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      const i = +e.target.dataset.i;
+      if(equipment.length===1){ equipment[0]={equipNo:'',serialNo:'',model:''}; }
+      else equipment.splice(i,1);
+      renderEqRows();
+      renderPreview();
+    });
+  });
+}
+renderEqRows();
+
+$('addEqRow').addEventListener('click', ()=>{
+  equipment.push({equipNo:'',serialNo:'',model:''});
+  renderEqRows();
+});
+
+/* recent equipment chips (shared across Wayne + Jonathan) */
+async function loadRecentEquipment(){
+  try{
+    const r = await window.storage.get('recent-equipment', true);
+    return r ? JSON.parse(r.value) : [];
+  }catch(e){ return []; }
+}
+async function saveRecentEquipment(item){
+  try{
+    let list = await loadRecentEquipment();
+    list = list.filter(x=>x.equipNo !== item.equipNo);
+    list.unshift(item);
+    list = list.slice(0,10);
+    await window.storage.set('recent-equipment', JSON.stringify(list), true);
+    renderRecentEqChips(list);
+  }catch(e){}
+}
+function renderRecentEqChips(list){
+  const el = $('recentEqChips');
+  el.innerHTML = '';
+  list.forEach(item=>{
+    const c = document.createElement('div');
+    c.className='chip';
+    c.textContent = `${item.equipNo} · ${item.model}`;
+    c.addEventListener('click', ()=>{
+      const empty = equipment.find(r=>!r.equipNo);
+      if(empty){ Object.assign(empty,item); }
+      else { equipment.push({...item}); }
+      renderEqRows();
+      renderPreview();
+    });
+    el.appendChild(c);
+  });
+}
+loadRecentEquipment().then(renderRecentEqChips);
+
+/* ---------------- HubSpot search ---------------- */
+$('hsSearchBtn').addEventListener('click', searchHubSpot);
+$('hsQuery').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); searchHubSpot(); }});
+
+async function searchHubSpot(){
+  const q = $('hsQuery').value.trim();
+  if(!q) return;
+  const statusEl = $('hsStatus'), resultsEl = $('hsResults');
+  statusEl.style.display='block';
+  statusEl.innerHTML = '<span class="spin" style="border-color:rgba(27,27,24,0.25);border-top-color:var(--steel-deep);"></span>Searching HubSpot...';
+  resultsEl.style.display='none';
+  $('hsSearchBtn').disabled = true;
+
+  try{
+    const resp = await fetch('/.netlify/functions/hubspot-search?q=' + encodeURIComponent(q));
+    const parsed = await resp.json();
+    if(parsed.error) throw new Error(parsed.error);
+
+    hsResultsCache = parsed.results || [];
+    statusEl.style.display='none';
+
+    if(hsResultsCache.length===0){
+      resultsEl.style.display='block';
+      resultsEl.innerHTML = '<div class="hs-item" style="cursor:default;color:var(--ink-soft);">No matches — check spelling, or just fill the fields in manually below.</div>';
+    } else {
+      resultsEl.style.display='block';
+      resultsEl.innerHTML = hsResultsCache.map((r,i)=>`
+        <div class="hs-item" data-i="${i}">
+          <b>${escapeHtml(r.companyName||'(no name)')}</b>
+          <span>${escapeHtml([r.address,r.customerCode].filter(Boolean).join(' · '))}</span>
+        </div>
+      `).join('');
+      resultsEl.querySelectorAll('.hs-item[data-i]').forEach(item=>{
+        item.addEventListener('click', ()=>{
+          const r = hsResultsCache[+item.dataset.i];
+          $('c_name').value = r.companyName || '';
+          $('c_code').value = r.customerCode || '';
+          $('c_addr').value = r.address || '';
+          $('c_cname').value = r.contactName || '';
+          $('c_cphone').value = r.contactPhone || r.phone || '';
+          $('c_cemail').value = r.contactEmail || r.email || '';
+          resultsEl.style.display='none';
+          renderPreview();
+          showToast('Customer details filled in from HubSpot');
+        });
+      });
+    }
+  } catch(err){
+    statusEl.style.display='block';
+    statusEl.innerHTML = '<span class="err">HubSpot error: ' + escapeHtml(String(err && err.message ? err.message : err)) + '</span>';
+    console.error('HubSpot search failed:', err);
+  } finally {
+    $('hsSearchBtn').disabled = false;
+  }
+}
+
+/* ---------------- PDI toggle ---------------- */
+$('f_pdi').addEventListener('change', e=>{
+  $('pdiBox').classList.toggle('on', e.target.checked);
+  $('sendWorkshop').style.display = e.target.checked ? 'inline-block' : 'none';
+  $('workshopTab').style.display = e.target.checked ? 'block' : 'none';
+  if(!e.target.checked && activeTab==='workshop'){ activeTab='transport'; }
+  renderPreview();
+});
+
+/* ---------------- tabs ---------------- */
+$('tabRow').addEventListener('click', e=>{
+  const t = e.target.closest('.tab');
+  if(!t) return;
+  activeTab = t.dataset.tab;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  renderPreview();
+});
+
+/* ---------------- build doc text ---------------- */
+function fmtDate(v){
+  if(!v) return '—';
+  const d = new Date(v+'T00:00:00');
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+}
+function buildDoc(target){
+  const entity = $('entityPills').dataset.value || '—';
+  const requestor = $('requestorPills').dataset.value || '—';
+  const same = $('sameAsCustomer').checked;
+
+  const cName=$('c_name').value||'—', cCode=$('c_code').value||'—', cAddr=$('c_addr').value||'—';
+  const cCName=$('c_cname').value||'—', cCPhone=$('c_cphone').value||'—', cCEmail=$('c_cemail').value||'—';
+
+  const dName = same ? cName : ($('d_name').value||'—');
+  const dAddr = same ? cAddr : ($('d_addr').value||'—');
+  const dCName = same ? cCName : ($('d_cname').value||'—');
+  const dCPhone = same ? cCPhone : ($('d_cphone').value||'—');
+  const dCEmail = same ? cCEmail : ($('d_cemail').value||'—');
+
+  const eqLines = equipment
+    .filter(r=>r.equipNo||r.serialNo||r.model)
+    .map((r,i)=>`  ${i+1}. Equip No: ${r.equipNo||'—'}   Serial No: ${r.serialNo||'—'}   Model: ${r.model||'—'}`)
+    .join('\n') || '  (no units added yet)';
+
+  const sale = $('f_saletype').value || '—';
+  const qty = $('f_qty').value || '—';
+  const mastType = $('f_mastType').value;
+  const liftHeight = $('f_liftHeight').value;
+  const mast = (mastType || liftHeight) ? `${mastType||'—'} / ${liftHeight||'—'}` : '—';
+  const chosenOptions = ['f_opt1','f_opt2','f_opt3','f_opt4'].map(id=>$(id).value).filter(Boolean);
+  const options = chosenOptions.length ? chosenOptions.join(', ') : '—';
+  const quoted = $('f_quoted').value ? fmtDate($('f_quoted').value) : '—';
+  const info = $('f_info').value || '—';
+  const pdi = $('f_pdi').checked;
+
+  const header = target==='workshop'
+    ? `WORKSHOP REQUEST — PDI / PREPARE FOR HIRE\nTo: workshop@clearlift.ie`
+    : `TRANSPORT REQUEST\nTo: transport@clearlift.ie`;
+
+  return `${header}
+Date needed: ${fmtDate($('f_date').value)}
+Requested by: ${requestor}    Entity: ${entity}
+
+CUSTOMER DETAILS
+Name: ${cName}
+Code: ${cCode}
+Address: ${cAddr}
+Contact: ${cCName}  |  ${cCPhone}  |  ${cCEmail}
+
+DELIVERY DETAILS ${same ? '(same as customer)' : ''}
+Name: ${dName}
+Address: ${dAddr}
+Contact: ${dCName}  |  ${dCPhone}  |  ${dCEmail}
+
+EQUIPMENT
+${eqLines}
+Mast: ${mast}
+Options: ${options}
+Sale / Rental: ${sale}    Quantity: ${qty}
+Delivery quoted to customer: ${quoted}
+
+Additional info for driver:
+${info}
+${pdi ? '\nPDI NEEDED: yes — see workshop copy.' : ''}`;
+}
+
+function renderPreview(){
+  $('docPreview').textContent = buildDoc(activeTab);
+}
+
+/* wire up all remaining inputs to live preview */
+['c_name','c_code','c_addr','c_cname','c_cphone','c_cemail',
+ 'd_name','d_addr','d_cname','d_cphone','d_cemail',
+ 'f_saletype','f_qty','f_mastType','f_liftHeight','f_opt1','f_opt2','f_opt3','f_opt4','f_quoted','f_info']
+ .forEach(id=>{
+   $(id).addEventListener('input', renderPreview);
+   $(id).addEventListener('change', renderPreview);
+ });
+
+/* ---------------- send / copy / clear ---------------- */
+function subjectFor(){
+  const cName = $('c_name').value || 'Customer TBC';
+  return `Transport Request - ${cName} - ${fmtDate($('f_date').value)}`;
+}
+function openMail(to, subject, body){
+  const url = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(url, '_blank');
+}
+$('sendTransport').addEventListener('click', ()=>{
+  openMail('transport@clearlift.ie', subjectFor(), buildDoc('transport'));
+  saveEquipmentToRecent();
+  showToast('Email to Transport opened');
+});
+$('sendWorkshop').addEventListener('click', ()=>{
+  openMail('workshop@clearlift.ie', 'PDI Request - '+ ($('c_name').value||'Customer TBC') +' - '+fmtDate($('f_date').value), buildDoc('workshop'));
+  showToast('Email to Workshop opened');
+});
+function saveEquipmentToRecent(){
+  equipment.filter(r=>r.equipNo).forEach(saveRecentEquipment);
+}
+$('copyBtn').addEventListener('click', async ()=>{
+  const text = buildDoc(activeTab);
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard');
+  }catch(e){
+    showToast('Could not copy — select the text manually');
+  }
+});
+$('clearBtn').addEventListener('click', ()=>{
+  if(!confirm('Clear the whole form?')) return;
+  ['c_name','c_code','c_addr','c_cname','c_cphone','c_cemail',
+   'd_name','d_addr','d_cname','d_cphone','d_cemail',
+   'f_quoted','f_info'].forEach(id=>$(id).value='');
+  $('f_saletype').value=''; $('f_qty').value=1;
+  $('f_mastType').value=''; $('f_liftHeight').value='';
+  ['f_opt1','f_opt2','f_opt3','f_opt4'].forEach(id=>$(id).value='');
+  $('f_pdi').checked=false; $('pdiBox').classList.remove('on');
+  $('sendWorkshop').style.display='none'; $('workshopTab').style.display='none';
+  $('sameAsCustomer').checked=true; $('deliveryFields').style.display='none';
+  equipment=[{equipNo:'',serialNo:'',model:''}];
+  renderEqRows();
+  renderPreview();
+});
+
+function showToast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+/* initial paint */
+renderPreview();
+</script>
+</body>
+</html>
