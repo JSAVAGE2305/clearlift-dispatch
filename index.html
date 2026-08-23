@@ -142,6 +142,7 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--steel);outline-o
 .btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink-soft);border-radius:var(--radius-pill);}
 .btn-orange{background:var(--orange);color:#fff;}
 .btn-sm{padding:7px 13px;font-size:12px;}
+.btn-sent{background:var(--steel-deep) !important;color:#fff !important;opacity:1 !important;cursor:default;}
 
 .hs-results{border:1.5px solid var(--line);border-radius:var(--radius-sm);margin-bottom:12px;overflow:hidden;}
 .hs-item{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13.5px;}
@@ -791,7 +792,8 @@ function encodeFormData(data){
   return Object.keys(data).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(data[k])).join('&');
 }
 async function submitNetlifyForm(formName, fields, btn, destinationLabel){
-  const originalLabel = btn.textContent;
+  const originalLabel = btn.dataset.label || btn.textContent;
+  btn.dataset.label = originalLabel;
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span>Sending...';
   try{
@@ -802,16 +804,36 @@ async function submitNetlifyForm(formName, fields, btn, destinationLabel){
     });
     if(!resp.ok) throw new Error('Send failed (' + resp.status + ')');
     showToast('Sent to ' + destinationLabel);
+    btn.textContent = 'Sent \u2713';
+    btn.classList.add('btn-sent');
+    btn.disabled = true;
     return true;
   } catch(err){
     showToast('Could not send: ' + (err && err.message ? err.message : err));
     console.error('Send failed:', err);
-    return false;
-  } finally {
     btn.disabled = false;
     btn.textContent = originalLabel;
+    return false;
   }
 }
+function resetSendButtons(){
+  [$('sendTransport'), $('sendWorkshop')].forEach(btn=>{
+    if(btn.classList.contains('btn-sent')){
+      btn.classList.remove('btn-sent');
+      btn.disabled = false;
+      btn.textContent = btn.dataset.label || (btn.id === 'sendTransport' ? 'Send to Transport' : 'Send to Workshop');
+    }
+  });
+}
+// Any edit to the form after a send means this could be a new or changed
+// request, so re-arm the send buttons rather than leaving them stuck on "Sent".
+document.addEventListener('input', e=>{
+  if(e.target.closest && e.target.closest('.card')) resetSendButtons();
+});
+document.addEventListener('change', e=>{
+  if(e.target.closest && e.target.closest('.card')) resetSendButtons();
+});
+
 $('sendTransport').addEventListener('click', async ()=>{
   const ok = await submitNetlifyForm('transport-request', {
     customer: $('c_name').value || 'Customer TBC',
@@ -852,6 +874,7 @@ $('clearBtn').addEventListener('click', ()=>{
   $('sameAsCustomer').checked=true; $('deliveryFields').style.display='none';
   equipment=[{equipNo:'',serialNo:'',model:''}];
   renderEqRows();
+  resetSendButtons();
   renderPreview();
 });
 
